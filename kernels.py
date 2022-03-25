@@ -7,7 +7,7 @@ import os
 import numpy as np
 
 # linear kernel
-class Linear:
+class Linear():
     '''
     Linear kernel.
     '''
@@ -32,6 +32,40 @@ class Linear:
 
         # compute Gram matrix
         G = np.tensordot(X, Y, axes=(1, 1))
+
+        # return G
+        return G
+
+# polynomial kernel
+class Polynomial():
+    '''
+    Polynomial kernel.
+    '''
+
+    def __init__(self, a, c, d):
+
+        # set polynomial parameters
+        self.a = a
+        self.c = c
+        self.d = d
+
+    def compute(self, X1, X2):
+        '''
+        Kernel computation function.
+
+        Arguments:
+            - X1: np.array
+                N x d matrix
+            - X2: np.array
+                M x d matrix
+
+        Returns:
+            - G: np.array
+                N x M Gram matrix
+        '''
+
+        # compute Gram matrix
+        G = np.power(a * np.tensordot(X, Y, axes=(1, 1)) + c, d)
 
         # return G
         return G
