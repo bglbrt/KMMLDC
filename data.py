@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 # data loader
-class LOADER():
+class Loader():
     '''
     Data loading class.
 
@@ -18,7 +18,7 @@ class LOADER():
             path to y train file
     '''
 
-    def __init__(self):
+    def __init__(self, x_train_path, x_test_path, y_train_path):
 
         # set paths
         self.x_train_path = x_train_path
@@ -30,7 +30,7 @@ class LOADER():
         self.Xte = np.array(pd.read_csv(x_test_path, header=None, sep=',', usecols=range(3072)))
         self.Ytr = np.array(pd.read_csv(y_train_path, sep=',', usecols=[1])).squeeze()
 
-    def load_train_test():
+    def load_train_test(self):
         '''
         Load train and test data as such.
 
@@ -46,7 +46,7 @@ class LOADER():
         # return data
         return self.Xtr, self.Xte, self.Ytr
 
-    def load_train_val(split_size=.2):
+    def load_train_val(self, split_size=.2):
         '''
         Load train and test data as such.
 
@@ -72,10 +72,10 @@ class LOADER():
         np.random.shuffle(val_split)
 
         # split data in train and validation data
-        Xval = self.Xtr[val_split].shape[0]
-        Xtra = self.Xtr[~val_split].shape[0]
-        Yval = self.Ytr[val_split].shape[0]
-        Ytra = self.Ytr[~val_split].shape[0]
+        Xval = self.Xtr[val_split]
+        Xtra = self.Xtr[~val_split]
+        Yval = self.Ytr[val_split]
+        Ytra = self.Ytr[~val_split]
 
         # return data
         return Xtra, Xval, Ytra, Yval
