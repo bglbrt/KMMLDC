@@ -28,7 +28,7 @@ class Linear():
         '''
 
         # compute Gram matrix
-        G = np.tensordot(X, Y, axes=(1, 1))
+        G = np.tensordot(X1, X2, axes=(1, 1))
 
         # return G
         return G
@@ -283,7 +283,7 @@ class Multiquadratic():
         O = np.add.outer(X1N, X2N) - 2 * np.tensordot(X1, X2, axes=(1, 1))
 
         # compute Gram matrix
-        G = np.sqrt(O + c**2)
+        G = np.sqrt(O + self.c**2)
 
         # return G
         return G
@@ -329,3 +329,13 @@ class InverseMultiquadratic():
 
         # return G
         return G
+
+# dictionary of kernels
+kernels = {'Linear':Linear(),
+           'Polynomial':Polynomial(),
+           'RBF':RBF(),
+           'Exponential':Exponential(),
+           'Laplacian':Laplacian(),
+           'TanH':TanH(),
+           'Multiquadratic':Multiquadratic(),
+           'InverseMultiquadratic':InverseMultiquadratic()}
