@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-# os libraries
-import os
-
-# numerical and computer vision libraries
+# numerical libraries
 import numpy as np
 
 # linear kernel
