@@ -330,6 +330,40 @@ class InverseMultiquadratic():
         # return G
         return G
 
+# Histogram Intersection
+class HistogramIntersection():
+    '''
+    HistogramIntersection kernel.
+    '''
+
+    def __init__(self):
+        pass
+
+    def compute(self, X1, X2):
+        '''
+        Kernel computation function.
+
+        Arguments:
+            - X1: np.array
+                N x d matrix
+            - X2: np.array
+                M x d matrix
+
+        Returns:
+            - G: np.array
+        '''
+
+        # initialise Gram matrix
+        G = np.zeros((X1.shape[0], X2.shape[0]))
+
+        # fill Gram matrix
+        for i in range(X1.shape[0]):
+            for j in range(X2.shape[0]):
+                G[i, j] = np.sum(np.minimum(X1[i], X2[j]))
+
+        # return G
+        return G
+
 # dictionary of kernels
 kernels = {'Linear':Linear(),
            'Polynomial':Polynomial(),
@@ -338,4 +372,5 @@ kernels = {'Linear':Linear(),
            'Laplacian':Laplacian(),
            'TanH':TanH(),
            'Multiquadratic':Multiquadratic(),
-           'InverseMultiquadratic':InverseMultiquadratic()}
+           'InverseMultiquadratic':InverseMultiquadratic(),
+           'HistogramIntersection':HistogramIntersection()}

@@ -21,10 +21,12 @@ parser.add_argument('--mode', type=str, default='val', metavar='M',
                     help='Validation (val) or evaluation (eval) mode (default: eval).')
 parser.add_argument('--split_size', type=float, default=.2, metavar='S',
                     help='Validation/training split size for validation mode (default: 0.2).')
+parser.add_argument('--transform', type=str, default="histogram", metavar='T',
+                    help='Data transform (default: histogram).')
 parser.add_argument('--batch_size', type=int, default=10, metavar='B',
                     help='Number of batches for validation model (default: 10).')
-parser.add_argument('--model', type=str, default='KRR', metavar='MO',
-                    help='Model to use for prediction (default: KRR).')
+parser.add_argument('--model', type=str, default='KFDA', metavar='MO',
+                    help='Model to use for prediction (default: KFDA).')
 parser.add_argument('--kernel', type=str, default='RBF', metavar='K',
                     help='Kernel to use for prediction (default: RBF).')
 
@@ -42,7 +44,7 @@ def main():
     Ytr_path = os.path.join(args.data, 'Ytr.csv')
 
     # declare loader
-    data_loader = Loader(Xtr_path, Xte_path, Ytr_path)
+    data_loader = Loader(Xtr_path, Xte_path, Ytr_path, args.transform)
 
     # set classifier
     classifier = classifiers[args.model]
@@ -73,12 +75,12 @@ def main():
             scores.append(score)
 
             # print current score
-            print('Score for batch {}/{}: {:.2f}'.format(batch+1, args.batch_size, 100*score))
+            print('Score for batch {}/{}: {:.2f}%'.format(batch+1, args.batch_size, 100*score))
 
         # print results
         print('-'*40)
         print('Model used: ' + args.model + ' | ' + 'Kernel used: ' + args.kernel)
-        print('Mean prediction score: {:.2f}'.format(100*np.mean(scores)))
+        print('Mean prediction score: {:.2f}%'.format(100*np.mean(scores)))
 
     # evaluation mode
     elif args.mode == 'eval':
