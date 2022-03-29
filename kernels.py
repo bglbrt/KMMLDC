@@ -372,7 +372,7 @@ class Log():
             power parameter for Log kernel
     '''
 
-    def __init__(self, d=2):
+    def __init__(self, d=1):
 
         # set power parameter
         self.d = d
