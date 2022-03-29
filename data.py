@@ -228,6 +228,7 @@ class Loader():
 
         elif self.augment == 'horizontal':
             self.Xtr = augment_horizontal(self.Xtr)
+            self.Ytr = np.concatenate([self.Ytr, self.Ytr])
 
         # compute transform
         if self.transform is None:
