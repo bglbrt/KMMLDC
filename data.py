@@ -6,6 +6,7 @@ import pandas as pd
 
 # computer vision libraries
 from scipy.ndimage import uniform_filter
+from scipy.ndimage import rotate
 
 # image to HOG transformation
 def image_to_hog(X, cells_size, n_orientations):
@@ -152,6 +153,37 @@ def flip_image(X):
     # return flipped image
     return X_FLIPPED
 
+def rotate_image(X, angle):
+    '''
+    Rotates an image inputted as vector.
+
+    Arguments:
+        - X: np.array
+            RGB image as one-dimensional vector
+        - angle: float
+            angle for rotation (in degrees)
+
+    Returns:
+        - X_ROTATED: np.array
+            flipped RGB image as one-dimensional vector
+    '''
+
+    # split original array into RGB channels and into 32x32 arrays
+    X_R = X[:1024].reshape((32, 32))
+    X_G = X[1024:2048].reshape((32, 32))
+    X_B = X[2048:3072].reshape((32, 32))
+
+    # initialise flipped image
+    X_ROTATED = np.zeros(3072)
+
+    # populate flipped image
+    X_ROTATED[:1024] = rotate(X_R, angle, mode='reflect', reshape=False).reshape(1024)
+    X_ROTATED[1024:2048] = rotate(X_G, angle, mode='reflect', reshape=False).reshape(1024)
+    X_ROTATED[2048:3072] = rotate(X_B, angle, mode='reflect', reshape=False).reshape(1024)
+
+    # return flipped image
+    return X_ROTATED
+
 def augment_horizontal(X):
     '''
     Adds all horizontally-flipped versions of images to data.
@@ -174,6 +206,29 @@ def augment_horizontal(X):
     # return augmented feature matrix
     return X_AUGMENTED
 
+def augment_rotate(X, angle):
+    '''
+    Adds all rotated versions of images to data.
+
+    Arguments:
+        - X: np.array
+            input feature matrix
+
+    Returns:
+        - X_ROTATED: np.array
+            augmented feature matrix
+    '''
+
+    # get dataset of flipped images
+    X_ROTATED_RIGHT = np.apply_along_axis(lambda z: rotate_image(z, angle), 1, X)
+    X_ROTATED_LEFT = np.apply_along_axis(lambda z: rotate_image(z, -angle), 1, X)
+
+    # concatenate unflipped and flipped images
+    X_AUGMENTED = np.concatenate([X, X_ROTATED_RIGHT, X_ROTATED_LEFT])
+
+    # return augmented feature matrix
+    return X_AUGMENTED
+
 # data loader
 class Loader():
     '''
@@ -188,13 +243,14 @@ class Loader():
             path to y train file
     '''
 
-    def __init__(self, x_train_path, x_test_path, y_train_path, augment, transform, cells_size, n_orientations):
+    def __init__(self, x_train_path, x_test_path, y_train_path, augment, angle, transform, cells_size, n_orientations):
 
         if cells_size % 2 != 0:
             raise Error('Error! Cells size for HOG transform must be even.')
 
         # set transform, cell_size and augment
         self.augment = augment
+        self.angle = angle
         self.transform = transform
         self.cells_size = cells_size
         self.n_orientations = n_orientations
@@ -229,6 +285,15 @@ class Loader():
         elif self.augment == 'horizontal':
             self.Xtr = augment_horizontal(self.Xtr)
             self.Ytr = np.concatenate([self.Ytr, self.Ytr])
+
+        elif self.augment == 'rotate':
+            self.Xtr = augment_rotate(self.Xtr, self.angle)
+            self.Ytr = np.concatenate([self.Ytr, self.Ytr, self.Ytr])
+
+        elif self.augment == 'all':
+            self.Xtr = augment_rotate(self.Xtr, self.angle)
+            self.Xtr = augment_horizontal(self.Xtr)
+            self.Ytr = np.concatenate([self.Ytr, self.Ytr, self.Ytr, self.Ytr, self.Ytr, self.Ytr])
 
         # compute transform
         if self.transform is None:
@@ -286,6 +351,15 @@ class Loader():
         elif self.augment == 'horizontal':
             self.Xtra = augment_horizontal(self.Xtra)
             self.Ytra = np.concatenate([self.Ytra, self.Ytra])
+
+        elif self.augment == 'rotate':
+            self.Xtra = augment_rotate(self.Xtra, self.angle)
+            self.Ytra = np.concatenate([self.Ytra, self.Ytra, self.Ytra])
+
+        elif self.augment == 'all':
+            self.Xtra = augment_rotate(self.Xtra, self.angle)
+            self.Xtra = augment_horizontal(self.Xtra)
+            self.Ytra = np.concatenate([self.Ytra, self.Ytra, self.Ytra, self.Ytra, self.Ytra, self.Ytra])
 
         # compute transform
         if self.transform is None:

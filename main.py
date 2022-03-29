@@ -22,8 +22,10 @@ parser.add_argument('--mode', type=str, default='val', metavar='M',
                     help='Validation (val) or evaluation (eval) mode (default: eval).')
 parser.add_argument('--split_size', type=float, default=.2, metavar='S',
                     help='Validation/training split size for validation mode (default: 0.2).')
-parser.add_argument('--augment', type=str, default="horizontal", metavar='A',
+parser.add_argument('--augment', type=str, default="all", metavar='A',
                     help='Data augmentation (default: horizontal).')
+parser.add_argument('--angle', type=float, default=30, metavar='AN',
+                    help='Angle for rotate data augmentation in degrees (default: 30).')
 parser.add_argument('--transform', type=str, default="hog", metavar='T',
                     help='Data transform (default: hog).')
 parser.add_argument('--cells_size', type=int, default=4, metavar='CS',
@@ -159,6 +161,11 @@ def main():
                              'n_components': args.KFDA_n_components,
                              'kernel_kwargs':kernel_kwargs}
 
+    elif args.model == 'SVCC':
+        classifier_kwargs = {'kernel': args.kernel,
+                             'C':1.0,
+                             'kernel_kwargs':kernel_kwargs}
+
     else:
         raise NotImplementedError("Model not implemented!")
 
@@ -170,7 +177,7 @@ def main():
     Ytr_path = os.path.join(args.data, 'Ytr.csv')
 
     # declare loader
-    data_loader = Loader(Xtr_path, Xte_path, Ytr_path, args.augment, args.transform, args.cells_size, args.n_orientations)
+    data_loader = Loader(Xtr_path, Xte_path, Ytr_path, args.augment, args.angle, args.transform, args.cells_size, args.n_orientations)
 
     print('Data successfully loaded!')
 
