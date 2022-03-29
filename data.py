@@ -49,10 +49,10 @@ def image_to_hog(X, cells_size, n_orientations):
         G_O = np.arctan2((G_Y + 1e-15), (G_X + 1e-15)) * (180 / np.pi) + 90
 
         # initialise HOG matrix
-        HOG_MAT = np.zeros((32//cells_size, 32//cells_size, 8))
+        HOG_MAT = np.zeros((32//cells_size, 32//cells_size, n_orientations))
 
         # iterate over orientations
-        for i in range(8):
+        for i in range(n_orientations):
 
             # select orientations in given range
             Oi = np.where(G_O < (180 / n_orientations) * (i + 1), G_O, 0)
