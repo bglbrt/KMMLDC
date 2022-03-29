@@ -4,16 +4,21 @@
 import numpy as np
 import pandas as pd
 
+# computer vision libraries
 from scipy.ndimage import uniform_filter
 
 # image to HOG transformation
-def image_to_hog(X):
+def image_to_hog(X, cells_size, n_orientations):
     '''
     Computes the hog of an image inputted as vector.
 
     Arguments:
         - X: np.array
             RGB image as one-dimensional vector
+        - cells_size: int
+            size of cells for HOG transform
+        - n_orientations: int
+            number of histogram orientations for HOG transform
 
     Returns:
         - HOG: np.array
@@ -26,7 +31,7 @@ def image_to_hog(X):
     X_B = X[2048:3072].reshape((32, 32))
 
     # initialise final HOG vector
-    HOG = np.zeros(1536)
+    HOG = np.zeros((32//cells_size)**2 * n_orientations * 3)
 
     # populate dictionary for each channel
     for C, X in enumerate([X_R, X_G, X_B]):
@@ -44,34 +49,38 @@ def image_to_hog(X):
         G_O = np.arctan2((G_Y + 1e-15), (G_X + 1e-15)) * (180 / np.pi) + 90
 
         # initialise HOG matrix
-        HOG_MAT = np.zeros((8, 8, 8))
+        HOG_MAT = np.zeros((32//cells_size, 32//cells_size, 8))
 
         # iterate over orientations
         for i in range(8):
 
             # select orientations in given range
-            Oi = np.where(G_O < (180 / 8) * (i + 1), G_O, 0)
-            Oi = np.where(G_O >= (180 / 8) * i, Oi, 0)
+            Oi = np.where(G_O < (180 / n_orientations) * (i + 1), G_O, 0)
+            Oi = np.where(G_O >= (180 / n_orientations) * i, Oi, 0)
 
             # select magnitudes for those orientations
             Mi = np.where(Oi > 0, G_M, 0)
 
             # fill matrix with magnitudes
-            HOG_MAT[:,:,i] = uniform_filter(Mi, size=(4, 4))[2::4, 2::4].T
+            HOG_MAT[:,:,i] = uniform_filter(Mi, size=(cells_size, cells_size))[int(cells_size/2)::cells_size, int(cells_size/2)::cells_size].T
 
         # fill HOG vector
-        HOG[512*C:512*(C+1)] = HOG_MAT.flatten()
+        HOG[((32//cells_size)**2 * n_orientations)*C:((32//cells_size)**2 * n_orientations)*(C+1)] = HOG_MAT.flatten()
 
     # return hog
     return HOG
 
-def array_to_hog(X):
+def array_to_hog(X, cells_size, n_orientations):
     '''
     Computes the HOG of multiple images in an array.
 
     Arguments:
         - X: np.array
             input feature matrix
+        - cells_size: int
+            size of cells for HOG transform
+        - n_orientations: int
+            number of histogram orientations for HOG transform
 
     Returns:
         - X_HOG: np.array
@@ -79,7 +88,7 @@ def array_to_hog(X):
     '''
 
     # compute HOG along axis
-    X_HOG = np.apply_along_axis(lambda z: image_to_hog(z), 1, X)
+    X_HOG = np.apply_along_axis(lambda z: image_to_hog(z, cells_size, n_orientations), 1, X)
 
     # return HOG
     return X_HOG
@@ -114,6 +123,57 @@ def array_to_hist(X):
     # return histogram matrix
     return X_HIST
 
+def flip_image(X):
+    '''
+    Flips an image inputted as vector.
+
+    Arguments:
+        - X: np.array
+            RGB image as one-dimensional vector
+
+    Returns:
+        - X_FLIPPED: np.array
+            flipped RGB image as one-dimensional vector
+    '''
+
+    # split original array into RGB channels and into 32x32 arrays
+    X_R = X[:1024].reshape((32, 32))
+    X_G = X[1024:2048].reshape((32, 32))
+    X_B = X[2048:3072].reshape((32, 32))
+
+    # initialise flipped image
+    X_FLIPPED = np.zeros(3072)
+
+    # populate flipped image
+    X_FLIPPED[:1024] = np.flip(X_R, axis=1).reshape(1024)
+    X_FLIPPED[1024:2048] = np.flip(X_G, axis=1).reshape(1024)
+    X_FLIPPED[2048:3072] = np.flip(X_B, axis=1).reshape(1024)
+
+    # return flipped image
+    return X_FLIPPED
+
+def augment_horizontal(X):
+    '''
+    Adds all horizontally-flipped versions of images to data.
+
+    Arguments:
+        - X: np.array
+            input feature matrix
+
+    Returns:
+        - X_AUGMENTED: np.array
+            augmented feature matrix
+    '''
+
+    # get dataset of flipped images
+    X_FLIPPED = np.apply_along_axis(lambda z: flip_image(z), 1, X)
+
+    # concatenate unflipped and flipped images
+    X_AUGMENTED = np.concatenate([X, X_FLIPPED])
+
+    # return augmented feature matrix
+    return X_AUGMENTED
+
 # data loader
 class Loader():
     '''
@@ -128,10 +188,16 @@ class Loader():
             path to y train file
     '''
 
-    def __init__(self, x_train_path, x_test_path, y_train_path, transform=None):
+    def __init__(self, x_train_path, x_test_path, y_train_path, augment, transform, cells_size, n_orientations):
 
-        # set transform
+        if cells_size % 2 != 0:
+            raise Error('Error! Cells size for HOG transform must be even.')
+
+        # set transform, cell_size and augment
+        self.augment = augment
         self.transform = transform
+        self.cells_size = cells_size
+        self.n_orientations = n_orientations
 
         # set paths
         self.x_train_path = x_train_path
@@ -142,21 +208,6 @@ class Loader():
         self.Xtr = np.array(pd.read_csv(x_train_path, header=None, sep=',', usecols=range(3072)))
         self.Xte = np.array(pd.read_csv(x_test_path, header=None, sep=',', usecols=range(3072)))
         self.Ytr = np.array(pd.read_csv(y_train_path, sep=',', usecols=[1])).squeeze()
-
-        # compute transform
-        if self.transform is None:
-            pass
-
-        elif self.transform == 'histogram':
-            self.Xtr = array_to_hist(self.Xtr)
-            self.Xte = array_to_hist(self.Xte)
-
-        elif self.transform == 'hog':
-            self.Xtr = array_to_hog(self.Xtr)
-            self.Xte = array_to_hog(self.Xte)
-
-        else:
-            raise NotImplementedError("Transform method not implemented!")
 
     def load_train_test(self):
         '''
@@ -170,6 +221,28 @@ class Loader():
             - Ytr: np.array
                 y train data
         '''
+
+        # compute data augmentation
+        if self.augment is None:
+            pass
+
+        elif self.augment == 'horizontal':
+            self.Xtr = augment_horizontal(self.Xtr)
+
+        # compute transform
+        if self.transform is None:
+            pass
+
+        elif self.transform == 'histogram':
+            self.Xtr = array_to_hist(self.Xtr)
+            self.Xte = array_to_hist(self.Xte)
+
+        elif self.transform == 'hog':
+            self.Xtr = array_to_hog(self.Xtr, self.cells_size, self.n_orientations)
+            self.Xte = array_to_hog(self.Xte, self.cells_size, self.n_orientations)
+
+        else:
+            raise NotImplementedError("Transform method not implemented!")
 
         # return data
         return self.Xtr, self.Xte, self.Ytr
@@ -200,10 +273,33 @@ class Loader():
         np.random.shuffle(val_split)
 
         # split data in train and validation data
-        Xval = self.Xtr[val_split]
-        Xtra = self.Xtr[~val_split]
-        Yval = self.Ytr[val_split]
-        Ytra = self.Ytr[~val_split]
+        self.Xval = self.Xtr[val_split]
+        self.Xtra = self.Xtr[~val_split]
+        self.Yval = self.Ytr[val_split]
+        self.Ytra = self.Ytr[~val_split]
+
+        # compute data augmentation
+        if self.augment is None:
+            pass
+
+        elif self.augment == 'horizontal':
+            self.Xtra = augment_horizontal(self.Xtra)
+            self.Ytra = np.concatenate([self.Ytra, self.Ytra])
+
+        # compute transform
+        if self.transform is None:
+            pass
+
+        elif self.transform == 'histogram':
+            self.Xtra = array_to_hist(self.Xtra)
+            self.Xval = array_to_hist(self.Xval)
+
+        elif self.transform == 'hog':
+            self.Xtra = array_to_hog(self.Xtra, self.cells_size, self.n_orientations)
+            self.Xval = array_to_hog(self.Xval, self.cells_size, self.n_orientations)
+
+        else:
+            raise NotImplementedError("Transform method not implemented!")
 
         # return data
-        return Xtra, Xval, Ytra, Yval
+        return self.Xtra, self.Xval, self.Ytra, self.Yval
