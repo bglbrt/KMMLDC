@@ -152,3 +152,49 @@ class KFDA():
 
         # return output
         return Yte
+
+from sklearn.svm import SVC
+
+# Kernel Fisher Discriminant Analysis classifier
+class SVCC():
+    '''
+    Kernel Fisher Discriminant Analysis classifier.
+    '''
+
+    def __init__(self):
+        pass
+
+    def fit(self, Xtr, Ytr, kernel, C, kernel_kwargs):
+        '''
+        Fitting function.
+
+        Arguments:
+            - Xtr: np.array
+                X train data
+            - Ytr: np.array
+                Y train data
+            - kernel: str
+                name of kernel
+            - C: float
+                SVC regularization parameter
+        '''
+
+        self.kernel_class = getattr(importlib.import_module("kernels"), kernel)
+        self.kernel = self.kernel_class(**kernel_kwargs)
+
+        self.clf = SVC(C=2, gamma='scale', kernel=self.kernel.compute).fit(Xtr, Ytr)
+
+    def predict(self, Xte):
+        '''
+        Predict function.
+
+        Arguments:
+            - Xte: np.array
+                input data
+
+        Returns:
+            - Yte: np.array
+                prediction
+        '''
+
+        return self.clf.predict(Xte)
