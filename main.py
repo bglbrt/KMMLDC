@@ -15,13 +15,13 @@ from models import *
 parser = argparse.ArgumentParser(description='Kernel Methods for Machine Learning Data Challenge 2022')
 
 # training settings
-parser.add_argument('--data', type=str, default='data', metavar='D',
+parser.add_argument('--data', type=str, default='data.nosync', metavar='D',
                     help="Folder where train and test data is located (default: data).")
 parser.add_argument('--mode', type=str, default='val', metavar='M',
                     help='Validation (val) or evaluation (eval) mode (default: eval).')
 parser.add_argument('--split_size', type=float, default=.2, metavar='S',
                     help='Validation/training split size for validation mode (default: 0.2).')
-parser.add_argument('--transform', type=str, default="histogram", metavar='T',
+parser.add_argument('--transform', type=str, default="hog", metavar='T',
                     help='Data transform (default: histogram).')
 parser.add_argument('--batch_size', type=int, default=10, metavar='B',
                     help='Number of batches for validation model (default: 10).')
@@ -39,12 +39,17 @@ def main():
     # parse arguments for training settings
     args = parser.parse_args()
 
+    print('-'*40)
+    print('Loading and pre-processing data...')
+
     Xtr_path = os.path.join(args.data, 'Xtr.csv')
     Xte_path = os.path.join(args.data, 'Xte.csv')
     Ytr_path = os.path.join(args.data, 'Ytr.csv')
 
     # declare loader
     data_loader = Loader(Xtr_path, Xte_path, Ytr_path, args.transform)
+
+    print('Data successfully loaded!')
 
     # set classifier
     classifier = classifiers[args.model]
@@ -87,6 +92,8 @@ def main():
 
         # load full data
         Xtr, Xte, Ytr = data_loader.load_train_test()
+
+        print('-'*40)
 
         # train classifier
         classifier.fit(Xtr, Ytr, args.kernel)
