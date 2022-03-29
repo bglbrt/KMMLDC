@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# file management libraries
+import importlib
+
 # numerical libraries
 import numpy as np
 import scipy.sparse.linalg as ssl
@@ -17,7 +20,7 @@ class KRR():
     def __init__(self):
         pass
 
-    def fit(self, Xtr, Ytr, kernel='TanH', gamma=1e-5):
+    def fit(self, Xtr, Ytr, kernel, gamma, kernel_kwargs):
         '''
         Fitting function.
 
@@ -29,7 +32,7 @@ class KRR():
             - kernel: str
                 name of kernel
             - gamma: float
-                Ridge Regression classifier regularization parameter
+                Kernel Ridge Regression classifier regularization parameter
         '''
 
         # set data
@@ -37,7 +40,8 @@ class KRR():
         self.Ytr = Ytr
 
         # set parameters
-        self.kernel = kernels[kernel]
+        self.kernel_class = getattr(importlib.import_module("kernels"), kernel)
+        self.kernel = self.kernel_class(**kernel_kwargs)
         self.gamma = gamma
 
         # compute Gram matrix
@@ -77,7 +81,7 @@ class KFDA():
     def __init__(self):
         pass
 
-    def fit(self, Xtr, Ytr, kernel='TanH', gamma=1e-6, n_components=30):
+    def fit(self, Xtr, Ytr, kernel, gamma, n_components, kernel_kwargs):
         '''
         Fitting function.
 
@@ -89,7 +93,7 @@ class KFDA():
             - kernel: str
                 name of kernel
             - gamma: float
-                Ridge Regression classifier regularization parameter
+                Kernel Fisher Discriminant Analysis regularization parameter
         '''
 
         # set data
@@ -104,7 +108,8 @@ class KFDA():
         self.Ytr_ohe = np.eye(self.n_classes)[self.Ytr]
 
         # set parameters
-        self.kernel = kernels[kernel]
+        self.kernel_class = getattr(importlib.import_module("kernels"), kernel)
+        self.kernel = self.kernel_class(**kernel_kwargs)
         self.gamma = gamma
 
         # compute Gram matrix
@@ -147,7 +152,3 @@ class KFDA():
 
         # return output
         return Yte
-
-# dictionary of classifiers
-classifiers = {'KRR': KRR(),
-               'KFDA': KFDA()}
