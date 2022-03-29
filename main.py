@@ -89,7 +89,7 @@ def main():
         Xtr, Xte, Ytr = data_loader.load_train_test()
 
         # train classifier
-        classifier.fit(Xtr, Ytr)
+        classifier.fit(Xtr, Ytr, args.kernel)
 
         # predict on test data
         Yte = classifier.predict(Xte)

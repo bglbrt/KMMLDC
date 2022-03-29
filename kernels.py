@@ -85,7 +85,7 @@ class RBF():
             bandwith parameter for the RBF kernel
     '''
 
-    def __init__(self, sigma=1.):
+    def __init__(self, sigma=5.):
 
         # set bandwith parameter
         self.sigma = sigma
@@ -152,12 +152,10 @@ class Exponential():
 
         # compute ||xi-yi||^2 = ||xi||^2 + ||yi^2|| - 2 <xi, yi>
         O = np.add.outer(X1N, X2N) - 2 * np.tensordot(X1, X2, axes=(1, 1))
-
-        # compute square root of O
-        OS = np.sqrt(O)
+        O[O < 0] = 0
 
         # compute Gram matrix
-        G = np.exp(-(1/(2 * (self.sigma**2))) * OS)
+        G = np.exp(-(1/(2 * (self.sigma**2))) * np.sqrt(O))
 
         # return G
         return G
@@ -197,12 +195,10 @@ class Laplacian():
 
         # compute ||xi-yi||^2 = ||xi||^2 + ||yi^2|| - 2 <xi, yi>
         O = np.add.outer(X1N, X2N) - 2 * np.tensordot(X1, X2, axes=(1, 1))
-
-        # compute square root of O
-        OS = np.sqrt(O)
+        O[O < 0] = 0
 
         # compute Gram matrix
-        G = np.exp(-(1/self.sigma) * OS)
+        G = np.exp(-(1/self.sigma) * np.sqrt(O))
 
         # return G
         return G
@@ -281,6 +277,7 @@ class Multiquadratic():
 
         # compute ||xi-yi||^2 = ||xi||^2 + ||yi^2|| - 2 <xi, yi>
         O = np.add.outer(X1N, X2N) - 2 * np.tensordot(X1, X2, axes=(1, 1))
+        O[O < 0] = 0
 
         # compute Gram matrix
         G = np.sqrt(O + self.c**2)
@@ -323,9 +320,10 @@ class InverseMultiquadratic():
 
         # compute ||xi-yi||^2 = ||xi||^2 + ||yi^2|| - 2 <xi, yi>
         O = np.add.outer(X1N, X2N) - 2 * np.tensordot(X1, X2, axes=(1, 1))
+        O[O < 0] = 0
 
         # compute Gram matrix
-        G = np.reciprocal(np.sqrt(O + c**2))
+        G = np.reciprocal(np.sqrt(O + self.c**2))
 
         # return G
         return G
@@ -364,13 +362,60 @@ class HistogramIntersection():
         # return G
         return G
 
+# Log kernel
+class Log():
+    '''
+    Log kernel.
+
+    Arguments:
+        - d: int
+            power parameter for Log kernel
+    '''
+
+    def __init__(self, d=2):
+
+        # set power parameter
+        self.d = d
+
+    def compute(self, X1, X2):
+        '''
+        Kernel computation function.
+
+        Arguments:
+            - X1: np.array
+                N x d matrix
+            - X2: np.array
+                M x d matrix
+
+        Returns:
+            - G: np.array
+        '''
+
+        # compute norm of observations in X and Y
+        X1N = np.square(np.linalg.norm(X1, axis=1))
+        X2N = np.square(np.linalg.norm(X2, axis=1))
+
+        # compute O = ||xi-yi||^2 = ||xi||^2 + ||yi^2|| - 2 <xi, yi>
+        O = np.add.outer(X1N, X2N) - 2 * np.tensordot(X1, X2, axes=(1, 1))
+        O[O < 0] = 0
+
+        # compute A = sqrt(O)
+        A = np.sqrt(O)
+
+        # compute Gram matrix G = log(||xi-yi||^d + 1)
+        G = -np.log(np.power(A, self.d) + 1)
+
+        # return G
+        return G
+
 # dictionary of kernels
-kernels = {'Linear':Linear(),
-           'Polynomial':Polynomial(),
-           'RBF':RBF(),
-           'Exponential':Exponential(),
-           'Laplacian':Laplacian(),
-           'TanH':TanH(),
-           'Multiquadratic':Multiquadratic(),
-           'InverseMultiquadratic':InverseMultiquadratic(),
-           'HistogramIntersection':HistogramIntersection()}
+kernels = {'Linear': Linear(),
+           'Polynomial': Polynomial(),
+           'RBF': RBF(),
+           'Exponential': Exponential(),
+           'Laplacian': Laplacian(),
+           'TanH': TanH(),
+           'Multiquadratic': Multiquadratic(),
+           'InverseMultiquadratic': InverseMultiquadratic(),
+           'HistogramIntersection': HistogramIntersection(),
+           'Log': Log()}
