@@ -474,7 +474,7 @@ class Wave():
         A = np.sqrt(O)
 
         # compute Gram matrix
-        G = self.theta * np.reciprocal(A + self.c) * np.sin((1/theta) * A)
+        G = self.theta * np.reciprocal(A + self.c) * np.sin((1/self.theta) * A)
 
         # return G
         return G
@@ -522,7 +522,7 @@ class Power():
         A = np.sqrt(O)
 
         # compute Gram matrix
-        G = - np.power(A, d)
+        G = - np.power(A, self.d)
 
         # return G
         return G
