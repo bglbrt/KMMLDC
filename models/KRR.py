@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# file management libraries
+import importlib
+
 # numerical libraries
 import numpy as np
 
@@ -15,7 +18,7 @@ class KRR():
     def __init__(self):
         pass
 
-    def fit(self, Xtr, Ytr, kernel='RBF', gamma=0.1):
+    def fit(self, Xtr, Ytr, kernel, gamma, kernel_kwargs):
         '''
         Fitting function.
 
@@ -27,7 +30,7 @@ class KRR():
             - kernel: str
                 name of kernel
             - gamma: float
-                Ridge Regression classifier regularization parameter
+                Kernel Ridge Regression classifier regularization parameter
         '''
 
         # set data
@@ -35,7 +38,8 @@ class KRR():
         self.Ytr = Ytr
 
         # set parameters
-        self.kernel = kernels[kernel]
+        self.kernel_class = getattr(importlib.import_module("kernels"), kernel)
+        self.kernel = self.kernel_class(**kernel_kwargs)
         self.gamma = gamma
 
         # compute Gram matrix
@@ -58,13 +62,10 @@ class KRR():
         '''
 
         # compute output
-        Yte = np.dot(self.alpha, self.kernel.compute(Xte, self.Xtr).T)
+        Yte = np.dot(self.kernel.compute(Xte, self.Xtr), self.alpha)
 
         # set output to closest integer
         Yte = np.round(np.minimum(np.maximum(Yte, 0), 9))
 
         # return output
         return Yte
-
-# dictionary of classifiers
-classifiers = {'KRR': KRR()}
