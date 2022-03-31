@@ -42,6 +42,10 @@ parser.add_argument('--KFDA_gamma', type=float, default=1e-6, metavar='KFDAG',
                     help='Kernel Fisher Discriminant Analysis regularization parameter (default: 1e-6).')
 parser.add_argument('--KFDA_n_components', type=int, default=50, metavar='KFDANC',
                     help='Kernel Fisher Discriminant Analysis number of components (default: 50).')
+parser.add_argument('--KSVC_C', type=float, default=1.0, metavar='KSVCC',
+                    help='Kernel Support Vector Classifier regularization parameter (default: 1.0).')
+parser.add_argument('--KSVC_decision_function', type=str, default='ovo', metavar='KSVCDF',
+                    help='Kernel Support Vector Classifier decision function (default: "ovo").')                   
 parser.add_argument('--kernel', type=str, default='RBF', metavar='K',
                     help='Kernel to use for prediction (default: RBF).')
 parser.add_argument('--Polynomial_a', type=float, default=1., metavar='POLYA',
@@ -164,6 +168,12 @@ def main():
     elif args.model == 'SVCC':
         classifier_kwargs = {'kernel': args.kernel,
                              'C':1.0,
+                             'kernel_kwargs':kernel_kwargs}
+
+    elif args.model == 'KSVC':
+        classifier_kwargs = {'kernel': args.kernel,
+                             'C': args.KSVC_C,
+                             'decision_function': args.KSVC_decision_function,
                              'kernel_kwargs':kernel_kwargs}
 
     else:

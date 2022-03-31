@@ -689,7 +689,7 @@ class HistogramIntersection():
 
         # fill Gram matrix
         for m in range(n_feat):
-            print(m)
+            #print(m)
             G += np.minimum(X1[:, m].reshape(-1, 1), X2[:, m].reshape(-1, 1).T)
 
         # return G
