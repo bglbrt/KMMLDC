@@ -287,7 +287,7 @@ class TanH():
         '''
 
         # compute Gram matrix
-        G = np.tanh(a * np.tensordot(X, Y, axes=(1, 1)) + c)
+        G = np.tanh(self.a * np.tensordot(X1, X2, axes=(1, 1)) + self.c)
 
         # return G
         return G
@@ -333,7 +333,7 @@ class RationalQuadratic():
         O[O < 0] = 0
 
         # compute Gram matrix
-        G = - np.divide(O, O+c) + 1
+        G = - np.divide(O, O+ self.c) + 1
 
         # return G
         return G
