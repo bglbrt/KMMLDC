@@ -24,8 +24,8 @@ parser.add_argument('--split_size', type=float, default=.2, metavar='S',
                     help='Validation/training split size for validation mode (default: 0.2).')
 parser.add_argument('--augment', type=str, default="all", metavar='A',
                     help='Data augmentation (default: horizontal).')
-parser.add_argument('--angle', type=float, default=30, metavar='AN',
-                    help='Angle for rotate data augmentation in degrees (default: 30).')
+parser.add_argument('--angle', type=float, default=15, metavar='AN',
+                    help='Angle for rotate data augmentation in degrees (default: 15).')
 parser.add_argument('--transform', type=str, default="hog", metavar='T',
                     help='Data transform (default: hog).')
 parser.add_argument('--cells_size', type=int, default=4, metavar='CS',
@@ -182,7 +182,7 @@ def main():
     print('Data successfully loaded!')
 
     # set classifier
-    classifier_class = getattr(importlib.import_module("models"), args.model)
+    classifier_class = getattr(importlib.import_module('models'+'.'+args.model), args.model)
     classifier = classifier_class()
 
     # validation mode

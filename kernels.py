@@ -70,7 +70,7 @@ class Polynomial():
         '''
 
         # compute Gram matrix
-        G = np.power(a * np.tensordot(X, Y, axes=(1, 1)) + c, d)
+        G = np.power(self.a * np.tensordot(X1, X2, axes=(1, 1)) + self.c, self.d)
 
         # return G
         return G
@@ -684,10 +684,13 @@ class HistogramIntersection():
         # initialise Gram matrix
         G = np.zeros((X1.shape[0], X2.shape[0]))
 
+        # get number of features
+        n_feat = X1.shape[1]
+
         # fill Gram matrix
-        for i in range(X1.shape[0]):
-            for j in range(X2.shape[0]):
-                G[i, j] = np.sum(np.minimum(X1[i], X2[j]))
+        for m in range(n_feat):
+            print(m)
+            G += np.minimum(X1[:, m].reshape(-1, 1), X2[:, m].reshape(-1, 1).T)
 
         # return G
         return G
