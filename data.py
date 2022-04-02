@@ -246,7 +246,7 @@ class Loader():
     def __init__(self, x_train_path, x_test_path, y_train_path, augment, angle, transform, cells_size, n_orientations):
 
         if cells_size % 2 != 0:
-            raise Error('Error! Cells size for HOG transform must be even.')
+            raise ValueError('Error! Cells size for HOG transform must be even.')
 
         # set transform, cell_size and augment
         self.augment = augment
