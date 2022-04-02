@@ -11,6 +11,7 @@ import numpy as np
 # dependencies
 from data import *
 from models import *
+from validation import *
 
 # parser initialisation
 parser = argparse.ArgumentParser(description='Kernel Methods for Machine Learning Data Challenge 2022')
@@ -20,6 +21,8 @@ parser.add_argument('--data', type=str, default='data.nosync', metavar='D',
                     help="Folder where train and test data is located (default: data).")
 parser.add_argument('--mode', type=str, default='val', metavar='M',
                     help='Validation (val) or evaluation (eval) mode (default: eval).')
+parser.add_argument('--n_splits', type=int, default=5, metavar='NS',
+                    help='k-foldes (default: 5).')
 parser.add_argument('--split_size', type=float, default=.2, metavar='S',
                     help='Validation/training split size for validation mode (default: 0.2).')
 parser.add_argument('--augment', type=str, default="all", metavar='A',
@@ -281,6 +284,58 @@ def main():
     classifier_class = getattr(importlib.import_module('models'+'.'+args.model), args.model)
     classifier = classifier_class()
 
+    if args.mode == 'cv':
+        
+        # initialise prediction scores
+        scores = []
+
+        print('-'*40)
+
+        X, _, Y, _ = data_loader.load_train_val(split_size=0)
+
+        print(X.shape)
+        raise ValueError
+
+        # Shuffle training set
+        #n_samples = X.shape[0]
+        #idx = list(range(n_samples))
+        #np.random.shuffle(idx)
+        #X = X[idx]
+        #Y = Y[idx]
+
+        skfold = StratifiedKFold(n_splits=args.n_splits)
+
+        for i, (train_index, val_index) in enumerate(skfold.split(X,Y)):
+            # load train and validation data
+            Xtr, Xval, Ytr, Yval = X[train_index], X[val_index], Y[train_index], Y[val_index]
+
+            if args.decomposition:
+                # reduce dimensions
+                decomposition.fit(Xtr, Ytr, **decomposition_kwargs)
+                Xtr = decomposition.predict(Xtr)
+                Xval = decomposition.predict(Xval)
+            
+            # train classifier
+            classifier.fit(Xtr, Ytr, **classifier_kwargs)
+
+            # predict on valiation data
+            Yval_pred = classifier.predict(Xval)
+
+            # compute score
+            score = (1/Yval.shape[0]) * np.sum(np.equal(Yval, Yval_pred))
+
+            # get score for batch
+            scores.append(score)
+
+            # print current score
+            print('Score for fold {}/{}: {:.2f}%'.format(i+1, args.n_splits, 100*score))
+
+        # print results
+        print('-'*40)
+        print('Model used: ' + args.model + ' | ' + 'Kernel used: ' + args.kernel)
+        print('Mean prediction score: {:.2f}%'.format(100*np.mean(scores)))
+
+
     # validation mode
     if args.mode == 'val':
 
@@ -332,7 +387,7 @@ def main():
                 # reduce dimensions
                 decomposition.fit(Xtr, Ytr, **decomposition_kwargs)
                 Xtr = decomposition.predict(Xtr)
-                Xval = decomposition.predict(Xval)
+                Xte = decomposition.predict(Xte)
 
         # train classifier
         classifier.fit(Xtr, Ytr, **classifier_kwargs)

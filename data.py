@@ -333,8 +333,8 @@ class Loader():
         '''
 
         # create splitting mask
-        o = np.ones(int(0.2*self.Xtr.shape[0]))
-        z = np.zeros(self.Xtr.shape[0] - int(0.2*self.Xtr.shape[0]))
+        o = np.ones(int(split_size*self.Xtr.shape[0]))
+        z = np.zeros(self.Xtr.shape[0] - int(split_size*self.Xtr.shape[0]))
         val_split = np.concatenate([o, z]).astype(bool)
         np.random.shuffle(val_split)
 
@@ -367,11 +367,13 @@ class Loader():
 
         elif self.transform == 'histogram':
             self.Xtra = array_to_hist(self.Xtra)
-            self.Xval = array_to_hist(self.Xval)
+            if split_size > 0:
+                self.Xval = array_to_hist(self.Xval)
 
         elif self.transform == 'hog':
             self.Xtra = array_to_hog(self.Xtra, self.cells_size, self.n_orientations)
-            self.Xval = array_to_hog(self.Xval, self.cells_size, self.n_orientations)
+            if split_size > 0:
+                self.Xval = array_to_hog(self.Xval, self.cells_size, self.n_orientations)
 
         else:
             raise NotImplementedError("Transform method not implemented!")
