@@ -3,6 +3,7 @@
 # numerical libraries
 import numpy as np
 import pandas as pd
+import random
 
 # computer vision libraries
 from scipy.ndimage import uniform_filter
@@ -246,7 +247,7 @@ class Loader():
     def __init__(self, x_train_path, x_test_path, y_train_path, augment, angle, transform, cells_size, n_orientations):
 
         if cells_size % 2 != 0:
-            raise Error('Error! Cells size for HOG transform must be even.')
+            raise ValueError('Error! Cells size for HOG transform must be even.')
 
         # set transform, cell_size and augment
         self.augment = augment
@@ -289,6 +290,15 @@ class Loader():
         elif self.augment == 'rotate':
             self.Xtr = augment_rotate(self.Xtr, self.angle)
             self.Ytr = np.concatenate([self.Ytr, self.Ytr, self.Ytr])
+
+        elif self.augment == 'random':
+            n_samples = self.Xtr.shape[0]
+            idx = random.sample(list(range(n_samples)), k=int(n_samples/2))
+            self.Xtr = np.concatenate([self.Xtr, augment_rotate(self.Xtr[idx], self.angle)[len(idx):]])
+            self.Ytr = np.concatenate([self.Ytr, self.Ytr[idx], self.Ytr[idx]])
+            idx = random.sample(list(range(n_samples)), k=int(n_samples/2))
+            self.Xtr = np.concatenate([self.Xtr, augment_horizontal(self.Xtr[idx])[len(idx):]])
+            self.Ytr = np.concatenate([self.Ytr, self.Ytr[idx]])
 
         elif self.augment == 'all':
             self.Xtr = augment_rotate(self.Xtr, self.angle)
@@ -333,8 +343,8 @@ class Loader():
         '''
 
         # create splitting mask
-        o = np.ones(int(0.2*self.Xtr.shape[0]))
-        z = np.zeros(self.Xtr.shape[0] - int(0.2*self.Xtr.shape[0]))
+        o = np.ones(int(split_size*self.Xtr.shape[0]))
+        z = np.zeros(self.Xtr.shape[0] - int(split_size*self.Xtr.shape[0]))
         val_split = np.concatenate([o, z]).astype(bool)
         np.random.shuffle(val_split)
 
@@ -356,6 +366,15 @@ class Loader():
             self.Xtra = augment_rotate(self.Xtra, self.angle)
             self.Ytra = np.concatenate([self.Ytra, self.Ytra, self.Ytra])
 
+        elif self.augment == 'random':
+            n_samples = self.Xtra.shape[0]
+            idx = random.sample(list(range(n_samples)), k=int(n_samples/2))
+            self.Xtra = np.concatenate([self.Xtra, augment_rotate(self.Xtra[idx], self.angle)[len(idx):]])
+            self.Ytra = np.concatenate([self.Ytra, self.Ytr[idx], self.Ytra[idx]])
+            idx = random.sample(list(range(n_samples)), k=int(n_samples/2))
+            self.Xtra = np.concatenate([self.Xtra, augment_horizontal(self.Xtra[idx])[len(idx):]])
+            self.Ytra = np.concatenate([self.Ytra, self.Ytra[idx]])
+
         elif self.augment == 'all':
             self.Xtra = augment_rotate(self.Xtra, self.angle)
             self.Xtra = augment_horizontal(self.Xtra)
@@ -367,11 +386,13 @@ class Loader():
 
         elif self.transform == 'histogram':
             self.Xtra = array_to_hist(self.Xtra)
-            self.Xval = array_to_hist(self.Xval)
+            if split_size > 0:
+                self.Xval = array_to_hist(self.Xval)
 
         elif self.transform == 'hog':
             self.Xtra = array_to_hog(self.Xtra, self.cells_size, self.n_orientations)
-            self.Xval = array_to_hog(self.Xval, self.cells_size, self.n_orientations)
+            if split_size > 0:
+                self.Xval = array_to_hog(self.Xval, self.cells_size, self.n_orientations)
 
         else:
             raise NotImplementedError("Transform method not implemented!")
