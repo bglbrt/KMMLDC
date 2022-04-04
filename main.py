@@ -293,9 +293,6 @@ def main():
 
         X, _, Y, _ = data_loader.load_train_val(split_size=0)
 
-        print(X.shape)
-        raise ValueError
-
         # Shuffle training set
         #n_samples = X.shape[0]
         #idx = list(range(n_samples))

@@ -3,6 +3,7 @@
 # numerical libraries
 import numpy as np
 import pandas as pd
+import random
 
 # computer vision libraries
 from scipy.ndimage import uniform_filter
@@ -290,6 +291,15 @@ class Loader():
             self.Xtr = augment_rotate(self.Xtr, self.angle)
             self.Ytr = np.concatenate([self.Ytr, self.Ytr, self.Ytr])
 
+        elif self.augment == 'random':
+            n_samples = self.Xtr.shape[0]
+            idx = random.sample(list(range(n_samples)), k=int(n_samples/2))
+            self.Xtr = np.concatenate([self.Xtr, augment_rotate(self.Xtr[idx], self.angle)[len(idx):]])
+            self.Ytr = np.concatenate([self.Ytr, self.Ytr[idx], self.Ytr[idx]])
+            idx = random.sample(list(range(n_samples)), k=int(n_samples/2))
+            self.Xtr = np.concatenate([self.Xtr, augment_horizontal(self.Xtr[idx])[len(idx):]])
+            self.Ytr = np.concatenate([self.Ytr, self.Ytr[idx]])
+
         elif self.augment == 'all':
             self.Xtr = augment_rotate(self.Xtr, self.angle)
             self.Xtr = augment_horizontal(self.Xtr)
@@ -355,6 +365,15 @@ class Loader():
         elif self.augment == 'rotate':
             self.Xtra = augment_rotate(self.Xtra, self.angle)
             self.Ytra = np.concatenate([self.Ytra, self.Ytra, self.Ytra])
+
+        elif self.augment == 'random':
+            n_samples = self.Xtra.shape[0]
+            idx = random.sample(list(range(n_samples)), k=int(n_samples/2))
+            self.Xtra = np.concatenate([self.Xtra, augment_rotate(self.Xtra[idx], self.angle)[len(idx):]])
+            self.Ytra = np.concatenate([self.Ytra, self.Ytr[idx], self.Ytra[idx]])
+            idx = random.sample(list(range(n_samples)), k=int(n_samples/2))
+            self.Xtra = np.concatenate([self.Xtra, augment_horizontal(self.Xtra[idx])[len(idx):]])
+            self.Ytra = np.concatenate([self.Ytra, self.Ytra[idx]])
 
         elif self.augment == 'all':
             self.Xtra = augment_rotate(self.Xtra, self.angle)
