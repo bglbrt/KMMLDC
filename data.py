@@ -323,13 +323,17 @@ class Loader():
         # return data
         return self.Xtr, self.Xte, self.Ytr
 
-    def load_train_val(self, split_size=.2):
+    def load_train_val(self, split_size=.2, cv=False, cv_batch=None):
         '''
         Load train and test data as such.
 
         Arguments:
             - split_size: float
                 share of data in validation data
+            - cv: bool
+                use cross-validation or not
+            - cv_batch: int
+                id of batch to use in cv
 
         Returns:
             - Xtr: np.array
@@ -343,10 +347,19 @@ class Loader():
         '''
 
         # create splitting mask
-        o = np.ones(int(split_size*self.Xtr.shape[0]))
-        z = np.zeros(self.Xtr.shape[0] - int(split_size*self.Xtr.shape[0]))
-        val_split = np.concatenate([o, z]).astype(bool)
-        np.random.shuffle(val_split)
+        if cv:
+            n_splits = int(1 / split_size)
+            val_split = np.zeros(self.Xtr.shape[0])
+            z1 = int(cv_batch / n_splits)
+            z2 = int(cv_batch / n_splits) + int(split_size*self.Xtr.shape[0])
+            val_split[z1:z2] = 1
+            val_split = val_split.astype(bool)
+
+        else:
+            o = np.ones(int(split_size*self.Xtr.shape[0]))
+            z = np.zeros(self.Xtr.shape[0] - int(split_size*self.Xtr.shape[0]))
+            val_split = np.concatenate([o, z]).astype(bool)
+            np.random.shuffle(val_split)
 
         # split data in train and validation data
         self.Xval = self.Xtr[val_split]
