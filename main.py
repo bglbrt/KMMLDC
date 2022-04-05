@@ -11,7 +11,6 @@ import numpy as np
 # dependencies
 from data import *
 from models import *
-from validation import *
 
 # parser initialisation
 parser = argparse.ArgumentParser(description='Kernel Methods for Machine Learning Data Challenge 2022')
@@ -19,20 +18,20 @@ parser = argparse.ArgumentParser(description='Kernel Methods for Machine Learnin
 # training settings
 parser.add_argument('--data', type=str, default='data.nosync', metavar='D',
                     help="Folder where train and test data is located (default: data).")
-parser.add_argument('--mode', type=str, default='val', metavar='M',
+parser.add_argument('--mode', type=str, default='eval', metavar='M',
                     help='Validation (val) or evaluation (eval) mode (default: eval).')
-parser.add_argument('--n_splits', type=int, default=5, metavar='NS',
-                    help='k-foldes (default: 5).')
+parser.add_argument('--cv', type=str, default='False', metavar='M',
+                    help='Use cross-validation for validation mode (default: True).')
 parser.add_argument('--split_size', type=float, default=.2, metavar='S',
                     help='Validation/training split size for validation mode (default: 0.2).')
-parser.add_argument('--augment', type=str, default="all", metavar='A',
+parser.add_argument('--augment', type=str, default="horizontal", metavar='A',
                     help='Data augmentation (default: horizontal).')
 parser.add_argument('--angle', type=float, default=15, metavar='AN',
                     help='Angle for rotate data augmentation in degrees (default: 15).')
 parser.add_argument('--transform', type=str, default="hog", metavar='T',
                     help='Data transform (default: hog).')
-parser.add_argument('--cells_size', type=int, default=4, metavar='CS',
-                    help='Cells size for HOG data transform (default: 4).')
+parser.add_argument('--cells_size', type=int, default=8, metavar='CS',
+                    help='Cells size for HOG data transform (default: 8).')
 parser.add_argument('--n_orientations', type=int, default=8, metavar='NO',
                     help='Number of gradient orientations for HOG data transform (default: 8).')
 parser.add_argument('--batch_size', type=int, default=10, metavar='B',
@@ -52,7 +51,7 @@ parser.add_argument('--KFDA_n_components', type=int, default=50, metavar='KFDANC
 parser.add_argument('--KSVC_C', type=float, default=1.0, metavar='KSVCC',
                     help='Kernel Support Vector Classifier regularization parameter (default: 1.0).')
 parser.add_argument('--KSVC_decision_function', type=str, default='ovo', metavar='KSVCDF',
-                    help='Kernel Support Vector Classifier decision function (default: "ovo").')                   
+                    help='Kernel Support Vector Classifier decision function (default: "ovo").')
 parser.add_argument('--kernel', type=str, default='RBF', metavar='K',
                     help='Kernel to use for prediction (default: RBF).')
 parser.add_argument('--decomposition_kernel', type=str, default='RBF', metavar='K',
@@ -219,16 +218,17 @@ def main():
     else:
         raise NotImplementedError("Kernel not implemented!")
 
-
-    # set decomposition arguments
+    # check for decomposition
     if args.decomposition:
+
+        # set decomposition arguments
         if args.decomposition == 'KPCA':
             decomposition_kwargs = {'kernel': args.decomposition_kernel,
                                     'n_components': args.KPCA_n_components,
                                     'decomp_kernel_kwargs': decomp_kernel_kwargs}
-    
+
         else:
-            raise NotImplementedError("Decomposition not implemented!")
+            raise NotImplementedError("Decomposition method not implemented!")
 
 
     # set classifier arguments
@@ -254,12 +254,6 @@ def main():
                              'decision_function': args.KSVC_decision_function,
                              'kernel_kwargs':kernel_kwargs}
 
-    elif args.model == 'skSVC':
-        classifier_kwargs = {'kernel': args.kernel,
-                             'C': args.KSVC_C,
-                             'decision_function': args.KSVC_decision_function,
-                             'kernel_kwargs':kernel_kwargs}
-
     else:
         raise NotImplementedError("Model not implemented!")
 
@@ -275,63 +269,14 @@ def main():
 
     print('Data successfully loaded!')
 
+    # set decomposition
     if args.decomposition:
-        # set decomposition
         decomposition_class = getattr(importlib.import_module('models'+'.'+args.decomposition), args.decomposition)
         decomposition = decomposition_class()
 
     # set classifier
     classifier_class = getattr(importlib.import_module('models'+'.'+args.model), args.model)
     classifier = classifier_class()
-
-    if args.mode == 'cv':
-        
-        # initialise prediction scores
-        scores = []
-
-        print('-'*40)
-
-        X, _, Y, _ = data_loader.load_train_val(split_size=0)
-
-        # Shuffle training set
-        #n_samples = X.shape[0]
-        #idx = list(range(n_samples))
-        #np.random.shuffle(idx)
-        #X = X[idx]
-        #Y = Y[idx]
-
-        skfold = StratifiedKFold(n_splits=args.n_splits)
-
-        for i, (train_index, val_index) in enumerate(skfold.split(X,Y)):
-            # load train and validation data
-            Xtr, Xval, Ytr, Yval = X[train_index], X[val_index], Y[train_index], Y[val_index]
-
-            if args.decomposition:
-                # reduce dimensions
-                decomposition.fit(Xtr, Ytr, **decomposition_kwargs)
-                Xtr = decomposition.predict(Xtr)
-                Xval = decomposition.predict(Xval)
-            
-            # train classifier
-            classifier.fit(Xtr, Ytr, **classifier_kwargs)
-
-            # predict on valiation data
-            Yval_pred = classifier.predict(Xval)
-
-            # compute score
-            score = (1/Yval.shape[0]) * np.sum(np.equal(Yval, Yval_pred))
-
-            # get score for batch
-            scores.append(score)
-
-            # print current score
-            print('Score for fold {}/{}: {:.2f}%'.format(i+1, args.n_splits, 100*score))
-
-        # print results
-        print('-'*40)
-        print('Model used: ' + args.model + ' | ' + 'Kernel used: ' + args.kernel)
-        print('Mean prediction score: {:.2f}%'.format(100*np.mean(scores)))
-
 
     # validation mode
     if args.mode == 'val':
@@ -341,17 +286,24 @@ def main():
 
         print('-'*40)
 
-        for batch in range(args.batch_size):
+        # set batch size
+        if args.cv:
+            batch_size = int(1 / args.split_size)
+
+        else:
+            batch_size = args.batch_size
+
+        for batch in range(batch_size):
 
             # load train and validation data
-            Xtr, Xval, Ytr, Yval = data_loader.load_train_val(args.split_size)
+            Xtr, Xval, Ytr, Yval = data_loader.load_train_val(args.split_size, args.cv, batch)
 
             if args.decomposition:
                 # reduce dimensions
                 decomposition.fit(Xtr, Ytr, **decomposition_kwargs)
                 Xtr = decomposition.predict(Xtr)
                 Xval = decomposition.predict(Xval)
-            
+
             # train classifier
             classifier.fit(Xtr, Ytr, **classifier_kwargs)
 
@@ -365,7 +317,10 @@ def main():
             scores.append(score)
 
             # print current score
-            print('Score for batch {}/{}: {:.2f}%'.format(batch+1, args.batch_size, 100*score))
+            if args.cv:
+                print('Score for fold {}/{}: {:.2f}%'.format(batch+1, batch_size, 100*score))
+            else:
+                print('Score for batch {}/{}: {:.2f}%'.format(batch+1, batch_size, 100*score))
 
         # print results
         print('-'*40)
