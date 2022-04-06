@@ -2,17 +2,13 @@
 
 # file management libraries
 import importlib
-from more_itertools import nth_product
 
 # numerical libraries
 import numpy as np
+from more_itertools import nth_product
 import scipy.sparse.linalg as ssl
 import scipy.spatial.distance as ssd
 from sympy import nth_power_roots_poly
-
-#### TEMP ####
-import sys
-sys.path.append('D:/MVA/KM/KMMLDC')
 
 # dependencies
 from kernels import *
@@ -174,4 +170,3 @@ if __name__ == '__main__':
     axarr2[1, 1].scatter(Xproj[y==1, 0], Xproj[y==1, 1], color='blue')
 
     plt.show()
-        

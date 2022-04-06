@@ -16,38 +16,38 @@ from models import *
 parser = argparse.ArgumentParser(description='Kernel Methods for Machine Learning Data Challenge 2022')
 
 # training settings
-parser.add_argument('--data', type=str, default='data.nosync', metavar='D',
+parser.add_argument('--data', type=str, default='data', metavar='D',
                     help="Folder where train and test data is located (default: data).")
 parser.add_argument('--mode', type=str, default='eval', metavar='M',
                     help='Validation (val) or evaluation (eval) mode (default: eval).')
-parser.add_argument('--cv', type=str, default='False', metavar='M',
+parser.add_argument('--cv', type=str, default='True', metavar='M',
                     help='Use cross-validation for validation mode (default: True).')
 parser.add_argument('--split_size', type=float, default=.2, metavar='S',
                     help='Validation/training split size for validation mode (default: 0.2).')
-parser.add_argument('--augment', type=str, default="horizontal", metavar='A',
-                    help='Data augmentation (default: horizontal).')
+parser.add_argument('--augment', type=str, default="all", metavar='A',
+                    help='Data augmentation (default: all).')
 parser.add_argument('--angle', type=float, default=15, metavar='AN',
                     help='Angle for rotate data augmentation in degrees (default: 15).')
 parser.add_argument('--transform', type=str, default="hog", metavar='T',
                     help='Data transform (default: hog).')
 parser.add_argument('--cells_size', type=int, default=4, metavar='CS',
-                    help='Cells size for HOG data transform (default: 6).')
+                    help='Cells size for HOG data transform (default: 4).')
 parser.add_argument('--n_orientations', type=int, default=8, metavar='NO',
                     help='Number of gradient orientations for HOG data transform (default: 8).')
 parser.add_argument('--batch_size', type=int, default=10, metavar='B',
                     help='Number of batches for validation model (default: 10).')
-parser.add_argument('--decomposition', type=str, default=None, metavar='DCP',
-                    help='Decomposition to use dimensionnality reduction (default: None).')
+parser.add_argument('--decomposition', type=str, default=False, metavar='DCP',
+                    help='Decomposition to use dimensionnality reduction (default: False).')
 parser.add_argument('--model', type=str, default='KFDA', metavar='MO',
                     help='Model to use for prediction (default: KFDA).')
-parser.add_argument('--KPCA_n_components', type=int, default=200, metavar='KPCANC',
+parser.add_argument('--KPCA_n_components', type=int, default=50, metavar='KPCANC',
                     help='Kernel Principal Component Analysis number of components (default: 50).')
 parser.add_argument('--KRR_gamma', type=float, default=1e-6, metavar='KRRG',
                     help='Kernel Ridge Regression classifier regularization parameter (default: 1e-6).')
 parser.add_argument('--KFDA_gamma', type=float, default=1e-6, metavar='KFDAG',
                     help='Kernel Fisher Discriminant Analysis regularization parameter (default: 1e-6).')
-parser.add_argument('--KFDA_n_components', type=int, default=500, metavar='KFDANC',
-                    help='Kernel Fisher Discriminant Analysis number of components (default: 500).')
+parser.add_argument('--KFDA_n_components', type=int, default=1000, metavar='KFDANC',
+                    help='Kernel Fisher Discriminant Analysis number of components (default: 1000).')
 parser.add_argument('--KSVC_C', type=float, default=1.0, metavar='KSVCC',
                     help='Kernel Support Vector Classifier regularization parameter (default: 1.0).')
 parser.add_argument('--KSVC_decision_function', type=str, default='ovo', metavar='KSVCDF',
