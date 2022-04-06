@@ -20,7 +20,7 @@ class SVC():
     Support Vector Classifier.
     '''
 
-    def __init__(self, epsilon = 1e-3):      
+    def __init__(self, epsilon = 1e-3):
         self.alpha = None
         self.epsilon = epsilon
 
@@ -40,7 +40,7 @@ class SVC():
             - gamma: float
                 Kernel Support Vector regularization parameter
         '''
-        
+
         # set data
         self.Xtr = Xtr
 
@@ -52,57 +52,57 @@ class SVC():
 
         # compute Gram matrix
         K = self.kernel.compute(self.Xtr, self.Xtr)
-        
+
         # define useful variables
         N = len(Ytr)
         diag_y = np.diag(Ytr)
 
         # Lagrange dual problem
         def loss(alpha):
-            
+
             # Dual Loss
             return 1/2*np.linalg.multi_dot([alpha.T, diag_y, K, diag_y, alpha])\
                     - alpha.T.dot(np.ones(N))
 
         # Partial derivate of Ld on alpha
         def grad_loss(alpha):
-            
+
             # Partial derivative of the dual loss wrt alpha
             return np.linalg.multi_dot([diag_y, K, diag_y, alpha]) - np.ones(N)
 
 
         # Equality constraints
-        fun_eq = lambda alpha: -alpha.T.dot(Ytr)    
+        fun_eq = lambda alpha: -alpha.T.dot(Ytr)
         jac_eq = lambda alpha: -Ytr
-        
+
         # Inequality constraints
-        fun_ineq = lambda alpha: self.C*np.ones(N) - alpha   
+        fun_ineq = lambda alpha: self.C*np.ones(N) - alpha
         jac_ineq = lambda alpha: - np.eye(N)
-        fun_ineq_pos = lambda alpha: alpha   
+        fun_ineq_pos = lambda alpha: alpha
         jac_ineq_pos = lambda alpha: np.eye(N)
-        
+
         constraints = ({'type': 'eq',  'fun': fun_eq, 'jac': jac_eq},
                        {'type': 'ineq', 'fun': fun_ineq , 'jac': jac_ineq},
                        {'type': 'ineq', 'fun': fun_ineq_pos, 'jac': jac_ineq_pos})
 
         optRes = optimize.minimize(fun=lambda alpha: loss(alpha),
-                                   x0=np.ones(N), 
-                                   method='SLSQP', 
-                                   jac=lambda alpha: grad_loss(alpha), 
+                                   x0=np.ones(N),
+                                   method='SLSQP',
+                                   jac=lambda alpha: grad_loss(alpha),
                                    constraints=constraints)
         self.alpha = optRes.x
 
         # Select indices of support vectors
         supportIndices = np.where((self.alpha > self.epsilon)\
                                   & (C*np.ones(N) - self.alpha > self.epsilon))
-        
+
         # Compute diag(y).dot(alpha) to avoid computing it at inference
         self.alpha = diag_y.dot(self.alpha)
-        
-        # Offset of the classifier 
+
+        # Offset of the classifier
         self.b = np.mean(Ytr[supportIndices] - self.alpha.T.dot(K)[supportIndices])
 
-    ### Implementation of the separting function $f$ 
+    ### Implementation of the separting function $f$
     def separating_function(self,x):
         # Input : matrix x of shape N data points times d dimension
         # Output: vector of size N
@@ -143,7 +143,7 @@ class OvOKSVC():
             scores[np.where(pred == 1), pos] += 1
             scores[np.where(pred == -1), neg] += 1
         Yte = np.argmax(scores, axis=1)
-        return Yte 
+        return Yte
 
 
 class OvAKSVC():
@@ -176,7 +176,7 @@ class OvAKSVC():
             pred = clf.separating_function(Xte) + clf.b
             scores[:,c] = pred
         Yte = np.argmax(scores, axis=1)
-        return Yte 
+        return Yte
 
 class KSVC():
     def __init__(self):
@@ -191,7 +191,3 @@ class KSVC():
 
     def predict(self, Xte):
         return self.SVC.predict(Xte)
-
-
-
-

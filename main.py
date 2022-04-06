@@ -30,8 +30,8 @@ parser.add_argument('--angle', type=float, default=15, metavar='AN',
                     help='Angle for rotate data augmentation in degrees (default: 15).')
 parser.add_argument('--transform', type=str, default="hog", metavar='T',
                     help='Data transform (default: hog).')
-parser.add_argument('--cells_size', type=int, default=8, metavar='CS',
-                    help='Cells size for HOG data transform (default: 8).')
+parser.add_argument('--cells_size', type=int, default=4, metavar='CS',
+                    help='Cells size for HOG data transform (default: 6).')
 parser.add_argument('--n_orientations', type=int, default=8, metavar='NO',
                     help='Number of gradient orientations for HOG data transform (default: 8).')
 parser.add_argument('--batch_size', type=int, default=10, metavar='B',
@@ -46,14 +46,14 @@ parser.add_argument('--KRR_gamma', type=float, default=1e-6, metavar='KRRG',
                     help='Kernel Ridge Regression classifier regularization parameter (default: 1e-6).')
 parser.add_argument('--KFDA_gamma', type=float, default=1e-6, metavar='KFDAG',
                     help='Kernel Fisher Discriminant Analysis regularization parameter (default: 1e-6).')
-parser.add_argument('--KFDA_n_components', type=int, default=50, metavar='KFDANC',
-                    help='Kernel Fisher Discriminant Analysis number of components (default: 50).')
+parser.add_argument('--KFDA_n_components', type=int, default=500, metavar='KFDANC',
+                    help='Kernel Fisher Discriminant Analysis number of components (default: 500).')
 parser.add_argument('--KSVC_C', type=float, default=1.0, metavar='KSVCC',
                     help='Kernel Support Vector Classifier regularization parameter (default: 1.0).')
 parser.add_argument('--KSVC_decision_function', type=str, default='ovo', metavar='KSVCDF',
                     help='Kernel Support Vector Classifier decision function (default: "ovo").')
-parser.add_argument('--kernel', type=str, default='RBF', metavar='K',
-                    help='Kernel to use for prediction (default: RBF).')
+parser.add_argument('--kernel', type=str, default='Log', metavar='K',
+                    help='Kernel to use for prediction (default: Log).')
 parser.add_argument('--decomposition_kernel', type=str, default='RBF', metavar='K',
                     help='Kernel to use for prediction (default: RBF).')
 parser.add_argument('--Polynomial_a', type=float, default=1., metavar='POLYA',
