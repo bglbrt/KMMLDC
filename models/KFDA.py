@@ -33,6 +33,10 @@ class KFDA():
                 name of kernel
             - gamma: float
                 Kernel Fisher Discriminant Analysis regularization parameter
+            - n_components: int
+                number of components for KFDA
+            - kernel_kwargs: dict
+                arguments to pass to kernel class
         '''
 
         # set data
@@ -91,4 +95,3 @@ class KFDA():
 
         # return output
         return Yte
-        
