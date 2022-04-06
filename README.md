@@ -1,6 +1,6 @@
 # Kernel Methods for Machine-Learning Data Challenge
 
-The 2022 Kernel Methods for Machine Learning Data Challenge presented participants with the task of performing image classification on 10 classes using solely kernel-based machine learning methods. In the following report, we present our results along with our intuitions and some alternative approaches we tried.\\
+The 2022 Kernel Methods for Machine Learning Data Challenge presented participants with the task of performing image classification on 10 classes using solely kernel-based machine learning methods. In the following report, we present our results along with our intuitions and some alternative approaches we tried.
 
 Our best submission achieves a classification accuracy of $57.3\%$ on the public test set. The main contribution of our work is in using a relatively fast method with closed-form solution that does not rely on an optimization solver. All experiments are reproducible and our code are available on this repository.
 
