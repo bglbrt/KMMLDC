@@ -1,4 +1,4 @@
-# Kernel Methods for Machine-Learning Data Challenge (2022)
+# Kernel Methods for Machine-Learning Data Challenge
 
 The 2022 Kernel Methods for Machine Learning Data Challenge presented participants with the task of performing image classification on 10 classes using solely kernel-based machine learning methods. In the following report, we present our results along with our intuitions and some alternative approaches we tried.\\
 
