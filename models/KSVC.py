@@ -229,9 +229,9 @@ class OvOKSVC():
         # return predicted classes
         return Yte
 
-class OvAKSVC():
+class OvRKSVC():
     '''
-    One vs. One Kernel Support Vector Classifier.
+    One vs. Rest Kernel Support Vector Classifier.
     '''
 
     def __init__(self):
@@ -351,9 +351,12 @@ class KSVC():
         if decision_function == 'ovo':
             self.SVC = OvOKSVC()
 
-        # set OvA KSVC
-        elif decision_function == 'ova':
-            self.SVC = OvAKSVC()
+        # set OvR KSVC
+        elif decision_function == 'ovr':
+            self.SVC = OvRKSVC()
+
+        else:
+            raise NotImplementedError("Please select a valid decision function i.e. 'ovr' or 'ova'")
 
         # fit KSVC
         self.SVC.fit(Xtr, Ytr, kernel, C, kernel_kwargs)
