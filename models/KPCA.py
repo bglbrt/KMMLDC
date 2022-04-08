@@ -11,8 +11,6 @@ import scipy.spatial.distance as ssd
 from sympy import nth_power_roots_poly
 
 # dependencies
-import sys
-sys.path.append('D:/MVA/KM/KMMLDC')
 from kernels import *
 
 # Kernel Principal Component Analysis
@@ -110,63 +108,3 @@ class KPCA():
 
         # return output
         return Xte_new
-
-
-if __name__ == '__main__':
-    '''
-        Compare results with sklearn implementation.
-    '''
-
-    from sklearn.datasets import make_circles
-    import matplotlib.pyplot as plt
-    from sklearn.decomposition import KernelPCA
-
-    f, axarr = plt.subplots(2, 2, sharex=True)
-
-    X, y = make_circles(n_samples=1000, random_state=123, noise=0.1, factor=0.2)
-    X[:,1] += 0.5
-    axarr[0, 0].scatter(X[y==0, 0], X[y==0, 1], color='red')
-    axarr[0, 0].scatter(X[y==1, 0], X[y==1, 1], color='blue')
-
-    kpca = KPCA()
-    kernel_kwargs = {}
-    kpca.fit(X, y, 'Linear', 1, kernel_kwargs)
-    Xproj = kpca.transform(X)
-    axarr[0, 1].scatter(Xproj[y==0, 0], np.zeros(500), color='red')
-    axarr[0, 1].scatter(Xproj[y==1, 0], np.zeros(500), color='blue')
-
-    kernel_kwargs = {'sigma': 0.25}
-    kpca.fit(X, y, 'RBF', 2, kernel_kwargs)
-    print(kpca.alpha.shape[1])
-    Xproj = kpca.transform(X)
-    axarr[1, 0].scatter(Xproj[y==0, 0], np.zeros(500), color='red')
-    axarr[1, 0].scatter(Xproj[y==1, 0], np.zeros(500), color='blue')
-
-    axarr[1, 1].scatter(Xproj[y==0, 0], Xproj[y==0, 1], color='red')
-    axarr[1, 1].scatter(Xproj[y==1, 0], Xproj[y==1, 1], color='blue')
-
-    plt.show()
-
-    f2, axarr2 = plt.subplots(2, 2, sharex=True)
-
-    X, y = make_circles(n_samples=1000, random_state=123, noise=0.1, factor=0.2)
-    X[:,1] += 0.5
-    axarr2[0, 0].scatter(X[y==0, 0], X[y==0, 1], color='red')
-    axarr2[0, 0].scatter(X[y==1, 0], X[y==1, 1], color='blue')
-
-    kpca = KernelPCA(n_components=1, kernel='linear')
-    kpca.fit(X, y)
-    Xproj = kpca.transform(X)
-    axarr2[0, 1].scatter(Xproj[y==0, 0], np.zeros(500), color='red')
-    axarr2[0, 1].scatter(Xproj[y==1, 0], np.zeros(500), color='blue')
-
-    kpca = KernelPCA(n_components=2, kernel='rbf', gamma=10)
-    kpca.fit(X, y)
-    Xproj = kpca.transform(X)
-    axarr2[1, 0].scatter(Xproj[y==0, 0], np.zeros(500), color='red')
-    axarr2[1, 0].scatter(Xproj[y==1, 0], np.zeros(500), color='blue')
-
-    axarr2[1, 1].scatter(Xproj[y==0, 0], Xproj[y==0, 1], color='red')
-    axarr2[1, 1].scatter(Xproj[y==1, 0], Xproj[y==1, 1], color='blue')
-
-    plt.show()
