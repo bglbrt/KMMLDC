@@ -5,10 +5,6 @@ import importlib
 
 # numerical libraries
 import numpy as np
-from more_itertools import nth_product
-import scipy.sparse.linalg as ssl
-import scipy.spatial.distance as ssd
-from sympy import nth_power_roots_poly
 
 # dependencies
 from kernels import *
@@ -78,7 +74,7 @@ class KPCA():
         self.alpha = self.alpha[:,:n_components]
 
         # print variance explained
-        var = np.trace(K) / self.N
+        var = K.trace() / self.N
         var_explained = np.linalg.norm((K @ self.alpha)) ** 2 / (self.N * var)
         print('Variance explained:', np.round(var_explained,3))
 
