@@ -301,8 +301,8 @@ def main():
             if args.decomposition:
                 # reduce dimensions
                 decomposition.fit(Xtr, Ytr, **decomposition_kwargs)
-                Xtr = decomposition.predict(Xtr)
-                Xval = decomposition.predict(Xval)
+                Xtr = decomposition.transform(Xtr)
+                Xval = decomposition.transform(Xval)
 
             # train classifier
             classifier.fit(Xtr, Ytr, **classifier_kwargs)
@@ -338,8 +338,8 @@ def main():
         if args.decomposition:
                 # reduce dimensions
                 decomposition.fit(Xtr, Ytr, **decomposition_kwargs)
-                Xtr = decomposition.predict(Xtr)
-                Xte = decomposition.predict(Xte)
+                Xtr = decomposition.transform(Xtr)
+                Xte = decomposition.transform(Xte)
 
         # train classifier
         classifier.fit(Xtr, Ytr, **classifier_kwargs)

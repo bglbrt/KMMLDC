@@ -17,8 +17,8 @@ class SVC():
     Support Vector Classifier.
 
     Arguments:
-        - alpha: float
-            regularization term for SVC
+        - alpha: np.array
+            separating function coefficients
         - epsilon: float
             tolerance term for optimization
     '''
@@ -41,7 +41,7 @@ class SVC():
             - kernel: str
                 name of kernel
             - C: float
-                some parameter
+                regularization parameter
             - kernel_kwargs: dict
                 arguments to pass to kernel class
         '''
@@ -173,7 +173,9 @@ class OvOKSVC():
         comb = [(pos,neg) for pos in range(self.n_classes) for neg in range(pos+1, self.n_classes)]
 
         # compute SVC over all combinations
-        for pos, neg in comb:
+        for i, (pos, neg) in enumerate(comb):
+
+            print(f'Training {pos} vs {neg} ({i+1}/{len(comb)})...')
 
             # create subsampled datasets
             X, Y = self.make_data(Xtr, Ytr, pos, neg)
@@ -262,6 +264,8 @@ class OvRKSVC():
         # compute SVC over all classes
         for c in range(self.n_classes):
 
+            print(f'Training {c} vs rest ({c+1}/{self.n_classes})...')
+
             # create subsampled datasets
             X, Y = self.make_data(Xtr, Ytr, c)
 
@@ -281,7 +285,7 @@ class OvRKSVC():
         c_idx = np.where(Ytr == c)
         Y[c_idx] = 1
 
-        # sample from the rest of data
+        # sample from the rest of data to balance classes
         sample_idx = tuple([random.sample(list(np.where(Y != 1)[0]), k=len(c_idx[0]))])
         Y[sample_idx] = -1
         idx = np.where(Y != 0)
