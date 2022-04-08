@@ -68,15 +68,10 @@ class KPCA():
         idx = eig_val.argsort()[::-1]
         eig_val = eig_val[idx]
         eig_vec = eig_vec[:,idx]
-        self.alpha = eig_vec[:,eig_val > 0] / np.sqrt(eig_val[eig_val > 0])
+        self.alpha = eig_vec / np.sqrt(eig_val)
 
         # project on n_components
         self.alpha = self.alpha[:,:n_components]
-
-        # print variance explained
-        var = K.trace() / self.N
-        var_explained = np.linalg.norm((K @ self.alpha)) ** 2 / (self.N * var)
-        print('Variance explained:', np.round(var_explained,3))
 
 
     def transform(self, Xte):
